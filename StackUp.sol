@@ -33,6 +33,11 @@ contract StackUp {
   constructor() {
     admin = msg.sender;
   }
+  
+  modifier questExists(uint256 questId) {
+    require(quests[questId].reward != 0, "Quest does not exist");
+    _;
+  }
 
   function createQuest(
     string calldata title_,
@@ -73,9 +78,26 @@ contract StackUp {
     Quest storage thisQuest = quests[questId];
     thisQuest.numberOfPlayers++;
   }
+  
+  function reviewQuestSubmission(uint256 questId, QuestReviewStatus status) external {
+    require(msg.sender == admin, "Only the admin can review quest submissions");
 
-  modifier questExists(uint256 questId) {
-    require(quests[questId].reward != 0, "Quest does not exist");
-    _;
+    Quest storage thisQuest = quests[questId];
+    require(thisQuest.reward != 0, "Quest does not exist");
+
+    require(
+      thisQuest.reviewStatus == QuestReviewStatus.PENDING,
+      "Quest submission has already been reviewed"
+    );
+
+    thisQuest.reviewStatus = status;
+
+    if (status == QuestReviewStatus.APPROVED) {
+      // Perform the necessary actions for approved submissions
+      // For example, distribute rewards to players
+    } else if (status == QuestReviewStatus.REJECTED) {
+      // Perform the necessary actions for rejected submissions
+      // For example, notify players about the rejection
+    }
   }
 }
